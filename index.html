@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Directory</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Active Directory Simulator</h1>
+    </header>
+    <main class="layout">
+        <!-- Zona 1: árbol del dominio. JS va a dibujar acá las OUs y containers -->
+        <nav id="arbol" aria-label="Árbol del dominio">
+            <h2>Arbol</h2>
+            
+            
+        </nav>
+        <!-- Zona 2: listaa de objetos de lo que se seleccione en el árbol -->
+        <section id="lista">
+            <h2>Objetos</h2>
+            <p>Usuarios, grupos y equipos</p>
+        </section>
+        <!-- Zona 3: propiedades del objeto seleccionado y botones de acción -->
+        <aside id="detalles">
+            <h2>Detalles</h2>
+            <p>Seleccioná un objeto</p>
+        </aside>
+    </main>
+    
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

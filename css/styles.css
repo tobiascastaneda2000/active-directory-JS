@@ -1,0 +1,193 @@
+* {
+    box-sizing: border-box;          /* Color del texto */
+
+}
+
+:root {
+  /* Colores de fondo */
+  --fondo-general: #1e1f24;
+  --fondo-paneles: #2a2c33;
+  --fondo-elevado: #33363f;
+
+  /* Bordes y Texto */
+  --borde: #3d414c;
+  --texto: #e6e6e6;
+  --texto-secundario: #9aa0ad;
+
+  /* Colores de estado y acento */
+  --acento: #4f8cff;
+  --peligro: #e5484d;
+  --exito: #3fb950;
+
+  --fondo-header: #24262d;
+  --fondo-lateral: #252832;
+
+  /* Espaciados */
+  --espaciado-xs: 0.25rem;
+  --espaciado-sm: 0.5rem;
+  --espaciado-md: 0.75rem;
+  --espaciado-lg: 1rem;
+  --espaciado-xl: 1.5rem;
+}
+
+header {
+    background-color: var(--fondo-header);
+    min-height: 60px;
+    border-bottom: 1px solid var(--borde);
+
+    display: flex;
+    align-items: center;
+    padding: 0 var(--espaciado-xl);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 250px 1fr 300px;
+    grid-template-rows: 1fr; /* Una sola fila de altura fija, así cada panel scrollea por su cuenta */
+    min-height: 0;
+}
+
+#arbol {
+    border-right: 1px solid var(--borde);
+    background-color: var(--fondo-lateral);
+}
+
+#lista {
+    background-color:var(--fondo-general);
+    background-color: var(--fondo-lateral);
+}
+
+#detalles {
+    border-left: 1px solid var(--borde);
+    background-color: var(--fondo-lateral);
+}
+
+body{
+    height: 100dvh;/* Altura = la ventana visible. Fija, así la página no scrollea sola y scrollean los paneles */
+    margin:0;
+    display: grid;
+    font-family: system-ui, sans-serif;
+    grid-template-rows: auto 1fr;
+    line-height: 1.5;
+    background-color: var(--fondo-general);
+    color: var(--texto);
+}
+
+#arbol,
+#lista,
+#detalles {
+    padding: var(--espaciado-xl);
+    overflow-y: auto; /* Si el contenido no entra, aparece scroll solo dentro del panel */
+}
+
+/* ===== ÁRBOL ===== */
+#arbol ul {
+  list-style: none;                    /* Sin viñetas, como en AD */
+  margin: 0;
+  padding-left: var(--espaciado-lg);   /* Sangría en cada nivel */
+}
+
+/* El ul del primer nivel no necesita sangría (hijo directo de #arbol) */
+#arbol > ul {
+  padding-left: 0;
+}
+
+.nodo {
+  display: block;                      /* La fila ocupa todo el ancho */
+  padding: var(--espaciado-xs) var(--espaciado-sm);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.nodo:hover {
+  background-color: var(--fondo-elevado);
+}
+
+.nodo.seleccionado {
+  background-color: var(--acento);     /* Nodo activo */
+  color: var(--texto);
+}
+
+/* ===== LISTA (tabla del panel central) ===== */
+#lista table {
+  width: 100%;
+  border-collapse: collapse;           /* Los bordes de las celdas se fusionan */
+}
+
+#lista th,
+#lista td {
+  text-align: left;
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  border-bottom: 1px solid var(--borde);
+}
+
+#lista th {
+  color: var(--texto-secundario);
+  font-weight: 600;
+}
+
+#lista tbody tr:hover {
+  background-color: var(--fondo-elevado);
+}
+
+@media screen and (max-width: 900px) {
+    .layout{
+        overflow-y: auto;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+:focus-visible{
+    outline: 2px solid var(--acento);
+    outline-offset: 2px;
+    /* Contorno visible al navegar con Tab; no aparece al hacer clic con el mouse */
+}
+
+
+/* ===== LISTA: fila clickeable ===== */
+#lista tbody tr {
+  cursor: pointer;
+}
+
+/* Va DESPUÉS de la regla :hover para que gane cuando tienen la misma especificidad */
+#lista tbody tr.fila-seleccionada {
+  background-color: var(--acento);
+}
+
+/* ===== DETALLES ===== */
+#detalles dl {
+  margin: 0;
+}
+
+#detalles dt {
+  color: var(--texto-secundario);
+  font-size: 0.85rem;
+  margin-top: var(--espaciado-md);
+}
+
+#detalles dd {
+  margin: 0;
+}
+
+.estado-ok {
+  color: var(--exito);
+}
+
+.estado-alerta {
+  color: var(--peligro);
+}
+
+#detalles button {
+  margin: var(--espaciado-lg) var(--espaciado-sm) 0 0;
+  padding: var(--espaciado-sm) var(--espaciado-lg);
+  background-color: var(--fondo-elevado);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#detalles button:hover {
+  border-color: var(--acento);
+}
+
