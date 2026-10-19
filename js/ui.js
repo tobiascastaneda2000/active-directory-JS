@@ -98,14 +98,16 @@ function crearCelda(texto) {
   return td;
 }
 
-export function renderizarLista(objetos, idPadre, contenedor) {
+
+
+export function renderizarLista(objetos, idPadre, contenedor,alSeleccionarObjeto) {
 
   let objetoPadre = objetos.find(obj => obj.id === idPadre); 
 
   let hijosDelPadre = objetos.filter(obj => obj.parentId === idPadre);
 
-    const titulo = document.createElement("h2");
-    titulo.textContent = objetoPadre ? objetoPadre.name : "Objetos";
+  const titulo = document.createElement("h2");
+  titulo.textContent = objetoPadre ? objetoPadre.name : "Objetos";
 
   // PASO D: caso especial, carpeta sin hijos.
   //   Si no hay hijos: crear un <p> con el texto "Este contenedor no tiene objetos.",
@@ -113,12 +115,12 @@ export function renderizarLista(objetos, idPadre, contenedor) {
   //   Mostrar: contenedor.replaceChildren(a, b)  (limpia el panel y pone esos elementos)
   //   TU CÓDIGO:
 
-    if(hijosDelPadre.length === 0) {
-        let parrafoSinHijos = document.createElement("p");
-        parrafoSinHijos.textContent = "Este contenedor no tiene objetos.";
-        contenedor.replaceChildren(titulo, parrafoSinHijos);
-        return
-        }
+  if(hijosDelPadre.length === 0) {
+      let parrafoSinHijos = document.createElement("p");
+      parrafoSinHijos.textContent = "Este contenedor no tiene objetos.";
+      contenedor.replaceChildren(titulo, parrafoSinHijos);
+      return
+    }
 
   // PASO E: encabezado de la tabla.
   //   Crear un <tr>. Por cada texto de ["Nombre", "Tipo"] (forEach):
@@ -151,15 +153,120 @@ export function renderizarLista(objetos, idPadre, contenedor) {
     const fila = document.createElement("tr");
     fila.appendChild(crearCelda(`${ICONOS_POR_TIPO[hijo.type]} ${hijo.name}`));
     fila.appendChild(crearCelda(NOMBRES_DE_TIPO[hijo.type]));
+    
+
+    // Hacer la fila clickeable:
+    //   1. Guardar el id en la fila (dataset), igual que en el árbol.
+    //   2. addEventListener("click", ...) con una arrow function que:
+    //        a. le saque la clase "fila-seleccionada" a la fila que la tenga
+    //           (buscala dentro de tbody con querySelector y ?., como en marcarSeleccionado)
+    //        b. se la ponga a ESTA fila (classList.add)
+    //        c. llame a alSeleccionarObjeto(hijo.id)
+    //   Ojo: el orden importa. Esto va ANTES de tbody.appendChild(fila)? ¿o da igual? Probalo.
+    //   TU CÓDIGO:
+    fila.dataset.id = hijo.id;
+    fila.addEventListener("click", () => {
+        tbody.querySelector(".fila-seleccionada")?.classList.remove("fila-seleccionada");
+        fila.classList.add("fila-seleccionada");
+        alSeleccionarObjeto(hijo.id);
+    });
+
     tbody.appendChild(fila);
   });
 
   // PASO G: armar la tabla y mostrar.
   //   Crear <table>, meterle thead y tbody (.append acepta varios argumentos),
   //   y reemplazar el contenido del panel con título + tabla (replaceChildren).
-  //   TU CÓDIGO:
 
   let tabla = document.createElement("table");
   tabla.append(thead, tbody);
   contenedor.replaceChildren(titulo, tabla);
+}
+
+// ---------- DETALLES (panel derecho) ----------
+
+// Agrega al <dl> un par etiqueta/valor:  <dt>etiqueta</dt><dd>valor</dd>
+//   (dl = lista de definiciones, dt = término, dd = descripción. Tags nuevos.)
+//   Devolver el <dd>, así quien llame puede ponerle una clase de color si quiere.
+//   TU CÓDIGO:
+function agregarDato(dl, etiqueta, valor) {
+  dl.appendChild(document.createElement("dt")).textContent = etiqueta;
+  dl.appendChild(document.createElement("dd")).textContent = valor;
+  return dl.lastChild;
+}
+
+// Crea un <button> con ese texto, type="button", que ejecuta alHacerClic al hacerle clic.
+//   TU CÓDIGO:
+function crearBoton(texto, alHacerClic) {
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.textContent = texto;
+  boton.addEventListener("click", alHacerClic);
+  return boton;
+}
+
+/**
+ * Muestra las propiedades de `objeto` (o un mensaje si es null) en `contenedor`.
+ * `alAccionar(accion, id)` es un callback: ui.js avisa "pidieron esta acción".
+ */
+export function renderizarDetalles(objetos, objeto, contenedor, alAccionar) {
+  // Sin objeto: muestra "Detalles / Seleccioná un objeto" y termina
+  if (!objeto) {
+    const mensajeDetalles = document.createElement("h2");
+    mensajeDetalles.textContent = "Detalles";
+    const mensajeSeleccionarObjeto = document.createElement("p");
+    mensajeSeleccionarObjeto.textContent = "Seleccioná un objeto";
+    contenedor.replaceChildren(mensajeDetalles, mensajeSeleccionarObjeto);
+    return;
+  }
+
+  // Título con el nombre del objeto y la lista de propiedades vacía
+  const titulo = document.createElement("h2");
+  titulo.textContent = objeto.name;
+  const dl = document.createElement("dl");
+  agregarDato(dl, "Tipo", NOMBRES_DE_TIPO[objeto.type]);
+
+  // Si no es usuario (OU, equipo, grupo) solo se ve el tipo, sin botones
+  if (objeto.type !== "user") {
+    contenedor.replaceChildren(titulo, dl);
+    return;
+  }
+
+  // Datos de la cuenta; el <dd> que devuelve agregarDato recibe verde o rojo
+  agregarDato(dl, "Nombre de inicio de sesión", objeto.sam);
+  agregarDato(dl, "Cuenta", objeto.enabled ? "Habilitada" : "Deshabilitada")
+    .classList.add(objeto.enabled ? "estado-ok" : "estado-alerta");
+  agregarDato(dl, "Bloqueo", objeto.locked ? "Bloqueada" : "No bloqueada")
+    .classList.add(objeto.locked ? "estado-alerta" : "estado-ok");
+  agregarDato(dl, "Contraseña cambiada", objeto.passwordLastSet);
+  agregarDato(dl, "Debe cambiar contraseña", objeto.mustChangePassword ? "Sí" : "No");
+
+  // `??` usa [] solo si memberOf es null o undefined
+  const idsGrupos = objeto.memberOf ?? [];
+
+  if (idsGrupos.length === 0) {
+    agregarDato(dl, "Miembro de", "Ninguno");
+  } else {
+    // Convierte cada id de grupo en su nombre y descarta los que no existan
+    const nombres = idsGrupos
+      .map((id) => objetos.find((o) => o.id === id)?.name)
+      .filter(Boolean);
+    agregarDato(dl, "Miembro de", nombres.join(", "));
+  }
+
+  // Los botones dependen del estado actual de la cuenta
+  const botones = [];
+
+  if (objeto.enabled) {
+    botones.push(crearBoton("Deshabilitar cuenta", () => alAccionar("deshabilitar", objeto.id)));
+  } else {
+    botones.push(crearBoton("Habilitar cuenta", () => alAccionar("habilitar", objeto.id)));
+  }
+
+  if (objeto.locked) {
+    botones.push(crearBoton("Desbloquear cuenta", () => alAccionar("desbloquear", objeto.id)));
+  }
+
+  // Dibuja título, propiedades y botones en el panel derecho
+  contenedor.replaceChildren(titulo, dl, ...botones);
 }
