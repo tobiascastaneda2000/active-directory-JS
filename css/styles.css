@@ -29,7 +29,28 @@
   --espaciado-lg: 1rem;
   --espaciado-xl: 1.5rem;
 
-    --fondo-overlay: rgb(0 0 0 / 0.6);
+  --fondo-overlay: rgb(0 0 0 / 0.6);
+
+  color-scheme: dark; /* controles nativos (scroll, campos) en oscuro */
+  --texto-sobre-acento: #0b1220; /* texto legible sobre el color de acento */
+}
+
+/* ===== TEMA CLARO: solo redefine las variables ===== */
+:root[data-tema="claro"] {
+  color-scheme: light;
+  --fondo-general: #f4f5f7;
+  --fondo-paneles: #ffffff;
+  --fondo-elevado: #e8eaee;
+  --borde: #c9ced6;
+  --texto: #1c1e24;
+  --texto-secundario: #5a6270;
+  --acento: #2563eb;
+  --texto-sobre-acento: #ffffff;
+  --peligro: #c62828;
+  --exito: #2e7d32;
+  --fondo-header: #eceef2;
+  --fondo-lateral: #f8f9fb;
+  --fondo-overlay: rgb(0 0 0 / 0.4);
 }
 
 header {
@@ -102,6 +123,11 @@ body{
   padding: var(--espaciado-xs) var(--espaciado-sm);
   border-radius: 4px;
   cursor: pointer;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
 }
 
 .nodo:hover {
@@ -110,7 +136,7 @@ body{
 
 .nodo.seleccionado {
   background-color: var(--acento);     /* Nodo activo */
-  color: var(--texto);
+  color: var(--texto-sobre-acento);
 }
 
 /* ===== LISTA (tabla del panel central) ===== */
@@ -157,6 +183,7 @@ body{
 /* Va DESPUÉS de la regla :hover para que gane cuando tienen la misma especificidad */
 #lista tbody tr.fila-seleccionada {
   background-color: var(--acento);
+  color: var(--texto-sobre-acento);
 }
 
 /* ===== DETALLES ===== */
@@ -279,7 +306,8 @@ dialog .opcion {
 /* ===== BOTÓN DEL HEADER ===== */
 /* Botones del header */
 #restablecer-datos,
-#nuevo-usuario {
+#nuevo-usuario,
+#cambiar-tema {
   padding: var(--espaciado-sm) var(--espaciado-md);
   background-color: var(--fondo-elevado);
   color: var(--texto);
@@ -289,12 +317,23 @@ dialog .opcion {
 }
 
 #restablecer-datos:hover,
-#nuevo-usuario:hover {
+#nuevo-usuario:hover,
+#cambiar-tema:hover {
   border-color: var(--acento);
 }
-
 /* Lista de grupos del modal: con scroll si hay muchos */
 #lista-grupos {
   max-height: 40vh;
   overflow-y: auto;
+}
+
+/* Botón que contiene el nombre en cada fila: permite elegirla con teclado */
+.enlace-fila {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }

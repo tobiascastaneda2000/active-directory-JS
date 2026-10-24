@@ -1,5 +1,6 @@
 // main.js: arranca la app y conecta datos, reglas (state.js) y dibujo (ui.js)
 import { objectos as datosIniciales } from "./data.js";
+import { iniciarTema } from "./tema.js";
 import { cargarObjetos, guardarObjetos, borrarGuardado } from "./storage.js";
 import {
   buscarPorId,
@@ -226,4 +227,6 @@ buscador.addEventListener("input", alBuscar);
 botonNuevoUsuario.addEventListener("click", alAbrirNuevoUsuario);
 botonRestablecer.addEventListener("click", alRestablecerDatos);
 // ...y deja el dominio seleccionado al abrir la página
+
+iniciarTema(document.querySelector("#cambiar-tema"));
 alSeleccionarCarpeta(raiz.id);

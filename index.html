@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Active Directory</title>
+        <script>
+      // Aplica el tema antes de pintar para evitar un destello (misma lógica que js/tema.js)
+      try {
+        const guardado = localStorage.getItem("ad-simulator:tema");
+        const delSistema = matchMedia("(prefers-color-scheme: light)").matches ? "claro" : "oscuro";
+        document.documentElement.dataset.tema = guardado ?? delSistema;
+      } catch {}
+    </script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -14,6 +22,7 @@
     <input type="search" id="buscador" placeholder="Buscar usuarios, grupos o equipos..." aria-label="Buscar en el dominio">
     <button type="button" id="nuevo-usuario">Nuevo usuario</button>
     <button type="button" id="restablecer-datos">Restablecer datos</button>
+    <button type="button" id="cambiar-tema">Modo claro</button>
 </header>
     <main class="layout">
         <!-- Zona 1: árbol del dominio. JS va a dibujar acá las OUs y containers -->
