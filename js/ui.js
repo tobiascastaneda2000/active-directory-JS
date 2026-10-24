@@ -257,6 +257,9 @@ export function renderizarDetalles(objetos, objeto, contenedor, alAccionar) {
   // Los botones dependen del estado actual de la cuenta
   const botones = [];
 
+    // Siempre disponible para un usuario: abre el modal de reset
+  botones.push(crearBoton("Restablecer contraseña", () => alAccionar("resetear", objeto.id)));
+
   if (objeto.enabled) {
     botones.push(crearBoton("Deshabilitar cuenta", () => alAccionar("deshabilitar", objeto.id)));
   } else {
@@ -269,4 +272,43 @@ export function renderizarDetalles(objetos, objeto, contenedor, alAccionar) {
 
   // Dibuja título, propiedades y botones en el panel derecho
   contenedor.replaceChildren(titulo, dl, ...botones);
+}
+
+// ---------- MODAL: restablecer contraseña ----------
+const modal = document.querySelector("#modal-contrasena");
+const formulario = document.querySelector("#form-contrasena");
+const textoUsuario = document.querySelector("#modal-usuario");
+const textoError = document.querySelector("#error-contrasena");
+
+// Abre el modal con el formulario limpio y el nombre del usuario
+export function abrirModalContrasena(usuario) {
+  formulario.reset(); // vacía los campos y restaura las casillas iniciales
+  textoError.textContent = "";
+  textoUsuario.textContent = `Usuario: ${usuario.name} (${usuario.sam})`;
+  modal.showModal(); // abre el modal con fondo oscurecido y foco atrapado
+}
+
+export function cerrarModalContrasena() {
+  modal.close();
+}
+
+export function mostrarErrorContrasena(mensaje) {
+  textoError.textContent = mensaje;
+}
+
+// Conecta el envío del formulario y el botón Cancelar
+export function iniciarModalContrasena(alEnviar) {
+  formulario.addEventListener("submit", (evento) => {
+    evento.preventDefault(); // evita que la página se recargue al enviar
+    alEnviar({
+      contrasena: document.querySelector("#contrasena-nueva").value,
+      confirmacion: document.querySelector("#contrasena-confirmar").value,
+      debeCambiar: document.querySelector("#debe-cambiar").checked,
+      desbloquear: document.querySelector("#desbloquear").checked,
+    });
+  });
+
+  document
+    .querySelector("#cancelar-contrasena")
+    .addEventListener("click", cerrarModalContrasena);
 }

@@ -30,3 +30,32 @@ export function desbloquearUsuario(usuario) {
     }
     usuario.locked = false;
 }
+
+// Valida la política de contraseña; devuelve la lista de errores (vacía = válida)
+export function validarContrasena(contrasena, confirmacion, usuario) {
+  const errores = [];
+
+  if (contrasena.length < 8) errores.push("Debe tener al menos 8 caracteres.");
+  if (!/[A-Z]/.test(contrasena)) errores.push("Debe incluir una mayúscula.");
+  if (!/[a-z]/.test(contrasena)) errores.push("Debe incluir una minúscula.");
+  if (!/\d/.test(contrasena)) errores.push("Debe incluir un número.");
+  // Símbolo = cualquier carácter que no sea letra ni número (la ñ y las tildes cuentan como símbolo)
+  if (!/[^A-Za-z0-9]/.test(contrasena)) errores.push("Debe incluir un símbolo.");
+  // No puede contener el nombre de usuario, sin distinguir mayúsculas
+  if (contrasena.toLowerCase().includes(usuario.sam.toLowerCase())) {
+    errores.push("No puede contener el nombre de usuario.");
+  }
+  if (contrasena !== confirmacion) errores.push("Las contraseñas no coinciden.");
+
+  return errores;
+}
+
+// Registra el reseteo; la contraseña NO se guarda (es una simulación)
+export function resetearContrasena(usuario, debeCambiar, desbloquear) {
+  if (usuario.type !== "user") return;
+
+  // Fecha de hoy como AAAA-MM-DD en hora local ("sv-SE" da ese formato)
+  usuario.passwordLastSet = new Date().toLocaleDateString("sv-SE");
+  usuario.mustChangePassword = debeCambiar;
+  if (desbloquear) usuario.locked = false;
+}

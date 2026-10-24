@@ -28,6 +28,38 @@
             <p>Seleccioná un objeto</p>
         </aside>
     </main>
+
+        <!-- Modal de restablecer contraseña (lo abre JS con showModal) -->
+    <dialog id="modal-contrasena" aria-labelledby="titulo-modal">
+    <!-- novalidate: la validación la hacemos nosotros en JS -->
+    <form id="form-contrasena" novalidate>
+        <h2 id="titulo-modal">Restablecer contraseña</h2>
+        <p id="modal-usuario"></p>
+
+        <label for="contrasena-nueva">Nueva contraseña</label>
+        <input type="password" id="contrasena-nueva" name="nueva" autocomplete="new-password">
+
+        <label for="contrasena-confirmar">Confirmar contraseña</label>
+        <input type="password" id="contrasena-confirmar" name="confirmar" autocomplete="new-password">
+
+        <label class="opcion">
+        <input type="checkbox" id="debe-cambiar" name="debeCambiar" checked>
+        El usuario debe cambiarla en el próximo inicio de sesión
+        </label>
+        <label class="opcion">
+        <input type="checkbox" id="desbloquear" name="desbloquear">
+        Desbloquear la cuenta
+        </label>
+
+        <!-- role="alert": los lectores de pantalla anuncian el error al aparecer -->
+        <p id="error-contrasena" role="alert"></p>
+
+        <div class="acciones-modal">
+        <button type="button" id="cancelar-contrasena">Cancelar</button>
+        <button type="submit">Aceptar</button>
+        </div>
+    </form>
+    </dialog>
     
     <script type="module" src="js/main.js"></script>
 </body>
