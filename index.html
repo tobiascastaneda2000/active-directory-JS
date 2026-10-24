@@ -7,9 +7,12 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    
     <header>
-        <h1>Active Directory Simulator</h1>
-    </header>
+    <h1>Active Directory Simulator</h1>
+    <!-- type="search": el navegador agrega un botón para borrar el texto -->
+    <input type="search" id="buscador" placeholder="Buscar usuarios, grupos o equipos..." aria-label="Buscar en el dominio">
+</header>
     <main class="layout">
         <!-- Zona 1: árbol del dominio. JS va a dibujar acá las OUs y containers -->
         <nav id="arbol" aria-label="Árbol del dominio">

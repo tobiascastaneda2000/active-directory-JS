@@ -40,6 +40,9 @@ header {
     display: flex;
     align-items: center;
     padding: 0 var(--espaciado-xl);
+
+    gap: var(--espaciado-lg);
+    flex-wrap: wrap; /* en pantallas chicas el buscador baja en vez de desbordar */
 }
 
 .layout {
@@ -247,4 +250,15 @@ dialog .opcion {
 /* Los botones del modal no llevan el margen de los del panel */
 .acciones-modal button {
   margin: 0;
+}
+
+/* ===== BUSCADOR ===== */
+#buscador {
+  margin-left: auto; /* lo empuja a la derecha del header */
+  width: min(22rem, 100%);
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  background-color: var(--fondo-general);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 4px;
 }

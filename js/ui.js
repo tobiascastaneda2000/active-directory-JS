@@ -312,3 +312,51 @@ export function iniciarModalContrasena(alEnviar) {
     .querySelector("#cancelar-contrasena")
     .addEventListener("click", cerrarModalContrasena);
 }
+
+// ---------- RESULTADOS DE BÚSQUEDA (panel del medio) ----------
+
+// Cada resultado llega como { objeto, ubicacion }; se dibuja una tabla de 3 columnas
+export function renderizarResultados(resultados, consulta, contenedor, alSeleccionarObjeto) {
+  const titulo = document.createElement("h2");
+  titulo.textContent = `Resultados para "${consulta}"`;
+
+  // Sin coincidencias: mensaje en lugar de una tabla vacía
+  if (resultados.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.textContent = "No se encontraron objetos.";
+    contenedor.replaceChildren(titulo, vacio);
+    return;
+  }
+
+  // Encabezado de la tabla
+  const encabezado = document.createElement("tr");
+  ["Nombre", "Tipo", "Ubicación"].forEach((texto) => {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = texto;
+    encabezado.appendChild(th);
+  });
+  const thead = document.createElement("thead");
+  thead.appendChild(encabezado);
+
+  // Una fila por resultado; ({ objeto, ubicacion }) saca esas dos propiedades del parámetro
+  const tbody = document.createElement("tbody");
+  resultados.forEach(({ objeto, ubicacion }) => {
+    const fila = document.createElement("tr");
+    fila.appendChild(crearCelda(`${ICONOS_POR_TIPO[objeto.type]} ${objeto.name}`));
+    fila.appendChild(crearCelda(NOMBRES_DE_TIPO[objeto.type]));
+    fila.appendChild(crearCelda(ubicacion || "—")); // el dominio no tiene ubicación
+
+    // Clic: resalta la fila y muestra el detalle
+    fila.addEventListener("click", () => {
+      tbody.querySelector(".fila-seleccionada")?.classList.remove("fila-seleccionada");
+      fila.classList.add("fila-seleccionada");
+      alSeleccionarObjeto(objeto.id);
+    });
+    tbody.appendChild(fila);
+  });
+
+  const tabla = document.createElement("table");
+  tabla.append(thead, tbody);
+  contenedor.replaceChildren(titulo, tabla);
+}

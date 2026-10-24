@@ -59,3 +59,35 @@ export function resetearContrasena(usuario, debeCambiar, desbloquear) {
   usuario.mustChangePassword = debeCambiar;
   if (desbloquear) usuario.locked = false;
 }
+
+
+// Quita tildes y pasa a minúsculas para comparar sin importar acentos
+function normalizar(texto) {
+  // NFD separa la letra de su tilde ("é" -> "e" + marca) y \p{M} borra las marcas
+  return texto.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+}
+
+// Devuelve los objetos cuyo nombre o usuario (sam) contienen el texto buscado
+export function buscarObjetos(objetos, consulta) {
+  const buscado = normalizar(consulta.trim());
+  if (buscado === "") return [];
+
+  return objetos.filter((obj) => {
+    // `?? ""` evita buscar "undefined" en los objetos que no tienen sam
+    const texto = normalizar(`${obj.name} ${obj.sam ?? ""}`);
+    return texto.includes(buscado);
+  });
+}
+
+// Arma la ubicación de un objeto, por ejemplo "empresa.local / Ventas"
+export function obtenerRuta(objetos, objeto) {
+  const partes = [];
+  let actual = buscarPorId(objetos, objeto.parentId);
+
+  // Sube de padre en padre hasta la raíz; unshift agrega al principio
+  while (actual) {
+    partes.unshift(actual.name);
+    actual = buscarPorId(objetos, actual.parentId);
+  }
+  return partes.join(" / ");
+}
