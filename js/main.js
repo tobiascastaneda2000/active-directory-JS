@@ -1,5 +1,6 @@
 // main.js: arranca la app y conecta datos, reglas (state.js) y dibujo (ui.js)
-import { objectos } from "./data.js";
+import { objectos as datosIniciales } from "./data.js";
+import { cargarObjetos, guardarObjetos, borrarGuardado } from "./storage.js";
 import {
   buscarPorId,
   buscarObjetos,
@@ -22,14 +23,18 @@ import {
   iniciarModalContrasena,
 } from "./ui.js";
 
-// Los tres paneles y el buscador
+// Datos de trabajo: los guardados en el navegador o, si no hay, los iniciales
+const o = cargarObjetos(datosIniciales);
+
+// Los tres paneles, el buscador y el botón de restablecer
 const arbol = document.querySelector("#arbol");
 const lista = document.querySelector("#lista");
 const detalles = document.querySelector("#detalles");
 const buscador = document.querySelector("#buscador");
+const botonRestablecer = document.querySelector("#restablecer-datos");
 
 // La raíz es el único objeto sin padre (el dominio)
-const raiz = objectos.find((obj) => obj.parentId === null);
+const raiz = o.find((obj) => obj.parentId === null);
 
 // Usuario al que se le está cambiando la contraseña (let porque se reasigna)
 let usuarioEnModal = null;
@@ -41,14 +46,14 @@ function alSeleccionarCarpeta(id) {
   carpetaActual = id;
   buscador.value = ""; // al navegar el árbol se limpia la búsqueda
   marcarSeleccionado(arbol, id);
-  renderizarLista(objectos, id, lista, alSeleccionarObjeto);
-  renderizarDetalles(objectos, null, detalles, alAccionar);
+  renderizarLista(o, id, lista, alSeleccionarObjeto);
+  renderizarDetalles(o, null, detalles, alAccionar);
 }
 
 // Clic en una fila de la tabla: muestra las propiedades de ese objeto
 function alSeleccionarObjeto(id) {
-  const objeto = buscarPorId(objectos, id);
-  renderizarDetalles(objectos, objeto, detalles, alAccionar);
+  const objeto = buscarPorId(o, id);
+  renderizarDetalles(o, objeto, detalles, alAccionar);
 }
 
 // Cada vez que se escribe en el buscador (evento "input")
@@ -62,18 +67,18 @@ function alBuscar() {
   }
 
   // Cada resultado lleva su ubicación ya calculada para que ui.js solo dibuje
-  const resultados = buscarObjetos(objectos, consulta).map((obj) => ({
+  const resultados = buscarObjetos(o, consulta).map((obj) => ({
     objeto: obj,
-    ubicacion: obtenerRuta(objectos, obj),
+    ubicacion: obtenerRuta(o, obj),
   }));
 
   renderizarResultados(resultados, consulta, lista, alSeleccionarObjeto);
-  renderizarDetalles(objectos, null, detalles, alAccionar);
+  renderizarDetalles(o, null, detalles, alAccionar);
 }
 
-// Clic en un botón del panel: aplica la acción y redibuja el panel derecho
+// Clic en un botón del panel: aplica la acción, guarda y redibuja el panel derecho
 function alAccionar(accion, id) {
-  const usuario = buscarPorId(objectos, id);
+  const usuario = buscarPorId(o, id);
 
   switch (accion) {
     case "deshabilitar":
@@ -92,7 +97,8 @@ function alAccionar(accion, id) {
       break;
   }
 
-  renderizarDetalles(objectos, usuario, detalles, alAccionar);
+  guardarObjetos(o); // persiste cualquier cambio en el navegador
+  renderizarDetalles(o, usuario, detalles, alAccionar);
 }
 
 // Se ejecuta al enviar el formulario del modal
@@ -105,16 +111,26 @@ function alEnviarContrasena(datos) {
     return;
   }
 
-  // Sin errores: aplica el reseteo, cierra el modal y actualiza el panel
+  // Sin errores: aplica el reseteo, lo guarda, cierra el modal y actualiza el panel
   resetearContrasena(usuarioEnModal, datos.debeCambiar, datos.desbloquear);
+  guardarObjetos(o);
   cerrarModalContrasena();
-  renderizarDetalles(objectos, usuarioEnModal, detalles, alAccionar);
+  renderizarDetalles(o, usuarioEnModal, detalles, alAccionar);
+}
+
+// Borra lo guardado y recarga la página con los datos iniciales
+function alRestablecerDatos() {
+  // confirm() alcanza para una demo; en una app real sería un modal propio
+  if (!confirm("¿Restablecer los datos de ejemplo? Se pierden los cambios hechos.")) return;
+  borrarGuardado();
+  location.reload();
 }
 
 // Arranque: dibuja el árbol (parentId null = empieza por la raíz)...
-renderizarArbol(objectos, raiz.parentId, arbol, alSeleccionarCarpeta);
-// ...conecta el modal y el buscador...
+renderizarArbol(o, raiz.parentId, arbol, alSeleccionarCarpeta);
+// ...conecta modal, buscador y botón de restablecer...
 iniciarModalContrasena(alEnviarContrasena);
 buscador.addEventListener("input", alBuscar);
+botonRestablecer.addEventListener("click", alRestablecerDatos);
 // ...y deja el dominio seleccionado al abrir la página
 alSeleccionarCarpeta(raiz.id);

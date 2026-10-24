@@ -262,3 +262,17 @@ dialog .opcion {
   border: 1px solid var(--borde);
   border-radius: 4px;
 }
+
+/* ===== BOTÓN DEL HEADER ===== */
+#restablecer-datos {
+  padding: var(--espaciado-sm) var(--espaciado-md);
+  background-color: var(--fondo-elevado);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#restablecer-datos:hover {
+  border-color: var(--acento);
+}
