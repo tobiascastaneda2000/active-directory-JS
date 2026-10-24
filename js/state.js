@@ -42,7 +42,7 @@ export function validarContrasena(contrasena, confirmacion, usuario) {
   // Símbolo = cualquier carácter que no sea letra ni número (la ñ y las tildes cuentan como símbolo)
   if (!/[^A-Za-z0-9]/.test(contrasena)) errores.push("Debe incluir un símbolo.");
   // No puede contener el nombre de usuario, sin distinguir mayúsculas
-  if (contrasena.toLowerCase().includes(usuario.sam.toLowerCase())) {
+  if (usuario.sam && contrasena.toLowerCase().includes(usuario.sam.toLowerCase())) {
     errores.push("No puede contener el nombre de usuario.");
   }
   if (contrasena !== confirmacion) errores.push("Las contraseñas no coinciden.");
@@ -90,4 +90,67 @@ export function obtenerRuta(objetos, objeto) {
     actual = buscarPorId(objetos, actual.parentId);
   }
   return partes.join(" / ");
+}
+
+// Formato del usuario: empieza con letra, 3 a 20 caracteres (el tope real de AD)
+const REGEX_SAM = /^[a-z][a-z0-9._-]{2,19}$/;
+
+// Lista las OUs y containers con su ruta completa, para el desplegable de ubicación
+export function listarCarpetas(objetos) {
+  return objetos
+    .filter((obj) => obj.type === "ou" || obj.type === "container")
+    .map((obj) => ({ id: obj.id, ruta: `${obtenerRuta(objetos, obj)} / ${obj.name}` }));
+}
+
+// Devuelve los errores del formulario de nuevo usuario (lista vacía = válido)
+export function validarNuevoUsuario(objetos, datos) {
+  const errores = [];
+  const nombre = datos.nombre.trim();
+  const sam = datos.sam.trim().toLowerCase();
+
+  if (nombre.length < 2) errores.push("El nombre debe tener al menos 2 caracteres.");
+
+  if (!REGEX_SAM.test(sam)) {
+    errores.push("El nombre de inicio de sesión debe empezar con una letra y tener de 3 a 20 caracteres (minúsculas, números, punto, guion o guion bajo).");
+  } else if (objetos.some((obj) => obj.sam === sam)) {
+    // some() da true si al menos un objeto cumple la condición
+    errores.push("Ya existe un usuario con ese nombre de inicio de sesión.");
+  }
+
+  // La ubicación tiene que ser un container u OU existente, sin otro objeto con el mismo nombre
+  const carpeta = objetos.find((obj) => obj.id === datos.idCarpeta);
+  if (!carpeta || !["ou", "container"].includes(carpeta.type)) {
+    errores.push("Elegí una ubicación válida.");
+  } else if (
+    objetos.some((obj) => obj.parentId === carpeta.id && obj.name.toLowerCase() === nombre.toLowerCase())
+  ) {
+    errores.push("Ya existe un objeto con ese nombre en esa ubicación.");
+  }
+
+  // Reutiliza la política de contraseñas; push(...lista) agrega todos los errores de una vez
+  errores.push(...validarContrasena(datos.contrasena, datos.confirmacion, { sam }));
+
+  return errores;
+}
+
+// Crea el usuario, lo agrega a la lista y lo devuelve (la contraseña no se guarda)
+export function crearUsuario(objetos, datos) {
+  // Nuevo id = el mayor que existe + 1 (el spread ... pasa el array como argumentos sueltos)
+  const nuevoId = Math.max(...objetos.map((obj) => obj.id)) + 1;
+
+  const usuario = {
+    id: nuevoId,
+    type: "user",
+    name: datos.nombre.trim(),
+    parentId: datos.idCarpeta,
+    sam: datos.sam.trim().toLowerCase(),
+    enabled: !datos.deshabilitada,
+    locked: false,
+    mustChangePassword: datos.debeCambiar,
+    passwordLastSet: new Date().toLocaleDateString("sv-SE"),
+    memberOf: [],
+  };
+
+  objetos.push(usuario); // modifica el array original, por eso toda la app lo ve
+  return usuario;
 }

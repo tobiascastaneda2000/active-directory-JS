@@ -12,6 +12,7 @@
     <h1>Active Directory Simulator</h1>
     <!-- type="search": el navegador agrega un botón para borrar el texto -->
     <input type="search" id="buscador" placeholder="Buscar usuarios, grupos o equipos..." aria-label="Buscar en el dominio">
+    <button type="button" id="nuevo-usuario">Nuevo usuario</button>
     <button type="button" id="restablecer-datos">Restablecer datos</button>
 </header>
     <main class="layout">
@@ -61,6 +62,45 @@
         <div class="acciones-modal">
         <button type="button" id="cancelar-contrasena">Cancelar</button>
         <button type="submit">Aceptar</button>
+        </div>
+    </form>
+    </dialog>
+
+        <!-- Modal de nuevo usuario (lo abre JS con showModal) -->
+    <dialog id="modal-nuevo-usuario" aria-labelledby="titulo-nuevo-usuario">
+    <form id="form-nuevo-usuario" novalidate>
+        <h2 id="titulo-nuevo-usuario">Nuevo usuario</h2>
+
+        <label for="nuevo-carpeta">Ubicación</label>
+        <!-- Las opciones las genera JS con las OUs y containers -->
+        <select id="nuevo-carpeta" name="carpeta"></select>
+
+        <label for="nuevo-nombre">Nombre completo</label>
+        <input type="text" id="nuevo-nombre" name="nombre" autocomplete="off" autofocus>
+
+        <label for="nuevo-sam">Nombre de inicio de sesión</label>
+        <input type="text" id="nuevo-sam" name="sam" autocomplete="off">
+
+        <label for="nuevo-contrasena">Contraseña inicial</label>
+        <input type="password" id="nuevo-contrasena" name="contrasena" autocomplete="new-password">
+
+        <label for="nuevo-confirmar">Confirmar contraseña</label>
+        <input type="password" id="nuevo-confirmar" name="confirmar" autocomplete="new-password">
+
+        <label class="opcion">
+        <input type="checkbox" id="nuevo-debe-cambiar" name="debeCambiar" checked>
+        El usuario debe cambiarla en el próximo inicio de sesión
+        </label>
+        <label class="opcion">
+        <input type="checkbox" id="nuevo-deshabilitada" name="deshabilitada">
+        La cuenta está deshabilitada
+        </label>
+
+        <p id="error-nuevo-usuario" role="alert"></p>
+
+        <div class="acciones-modal">
+        <button type="button" id="cancelar-nuevo-usuario">Cancelar</button>
+        <button type="submit">Crear</button>
         </div>
     </form>
     </dialog>

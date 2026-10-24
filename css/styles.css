@@ -218,7 +218,10 @@ dialog label {
   margin-top: var(--espaciado-md);
 }
 
-dialog input[type="password"] {
+/* Campos de los modales: contraseña, texto y lista desplegable */
+dialog input[type="password"],
+dialog input[type="text"],
+dialog select {
   width: 100%;
   margin-top: var(--espaciado-xs);
   padding: var(--espaciado-sm);
@@ -226,6 +229,13 @@ dialog input[type="password"] {
   color: var(--texto);
   border: 1px solid var(--borde);
   border-radius: 4px;
+}
+
+/* Mensajes de error de los modales */
+#error-contrasena,
+#error-nuevo-usuario {
+  color: var(--peligro);
+  min-height: 1.5em; /* reserva el lugar para que el modal no salte */
 }
 
 /* Casilla y texto en la misma línea */
@@ -264,7 +274,9 @@ dialog .opcion {
 }
 
 /* ===== BOTÓN DEL HEADER ===== */
-#restablecer-datos {
+/* Botones del header */
+#restablecer-datos,
+#nuevo-usuario {
   padding: var(--espaciado-sm) var(--espaciado-md);
   background-color: var(--fondo-elevado);
   color: var(--texto);
@@ -273,6 +285,7 @@ dialog .opcion {
   cursor: pointer;
 }
 
-#restablecer-datos:hover {
+#restablecer-datos:hover,
+#nuevo-usuario:hover {
   border-color: var(--acento);
 }

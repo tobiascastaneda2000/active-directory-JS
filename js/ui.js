@@ -360,3 +360,59 @@ export function renderizarResultados(resultados, consulta, contenedor, alSelecci
   tabla.append(thead, tbody);
   contenedor.replaceChildren(titulo, tabla);
 }
+
+// ---------- MODAL: nuevo usuario ----------
+const modalNuevoUsuario = document.querySelector("#modal-nuevo-usuario");
+const formularioNuevoUsuario = document.querySelector("#form-nuevo-usuario");
+const selectorCarpeta = document.querySelector("#nuevo-carpeta");
+const textoErrorNuevoUsuario = document.querySelector("#error-nuevo-usuario");
+
+// Abre el modal con las carpetas disponibles y una preseleccionada
+export function abrirModalNuevoUsuario(carpetas, idPreseleccionada) {
+  formularioNuevoUsuario.reset();
+  textoErrorNuevoUsuario.textContent = "";
+
+  // Una <option> por carpeta: value guarda el id y el texto muestra la ruta
+  const opciones = carpetas.map(({ id, ruta }) => {
+    const opcion = document.createElement("option");
+    opcion.value = id;
+    opcion.textContent = ruta;
+    return opcion;
+  });
+  selectorCarpeta.replaceChildren(...opciones);
+
+  // Si la carpeta actual no está en la lista (por ejemplo el dominio), queda la primera
+  selectorCarpeta.value = idPreseleccionada;
+  if (selectorCarpeta.value === "") selectorCarpeta.selectedIndex = 0;
+
+  modalNuevoUsuario.showModal();
+}
+
+export function cerrarModalNuevoUsuario() {
+  modalNuevoUsuario.close();
+}
+
+export function mostrarErrorNuevoUsuario(mensaje) {
+  textoErrorNuevoUsuario.textContent = mensaje;
+}
+
+// Conecta el envío del formulario y el botón Cancelar
+export function iniciarModalNuevoUsuario(alEnviar) {
+  formularioNuevoUsuario.addEventListener("submit", (evento) => {
+    evento.preventDefault(); // evita que la página se recargue
+    alEnviar({
+      // select.value siempre es texto: Number() lo pasa a número para comparar con los ids
+      idCarpeta: Number(selectorCarpeta.value),
+      nombre: document.querySelector("#nuevo-nombre").value,
+      sam: document.querySelector("#nuevo-sam").value,
+      contrasena: document.querySelector("#nuevo-contrasena").value,
+      confirmacion: document.querySelector("#nuevo-confirmar").value,
+      debeCambiar: document.querySelector("#nuevo-debe-cambiar").checked,
+      deshabilitada: document.querySelector("#nuevo-deshabilitada").checked,
+    });
+  });
+
+  document
+    .querySelector("#cancelar-nuevo-usuario")
+    .addEventListener("click", cerrarModalNuevoUsuario);
+}

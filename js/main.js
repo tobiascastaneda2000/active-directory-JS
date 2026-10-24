@@ -5,11 +5,14 @@ import {
   buscarPorId,
   buscarObjetos,
   obtenerRuta,
+  listarCarpetas,
   deshabilitarUsuario,
   habilitarUsuario,
   desbloquearUsuario,
   validarContrasena,
   resetearContrasena,
+  validarNuevoUsuario,
+  crearUsuario,
 } from "./state.js";
 import {
   renderizarArbol,
@@ -21,20 +24,25 @@ import {
   cerrarModalContrasena,
   mostrarErrorContrasena,
   iniciarModalContrasena,
+  abrirModalNuevoUsuario,
+  cerrarModalNuevoUsuario,
+  mostrarErrorNuevoUsuario,
+  iniciarModalNuevoUsuario,
 } from "./ui.js";
 
 // Datos de trabajo: los guardados en el navegador o, si no hay, los iniciales
-const o = cargarObjetos(datosIniciales);
+const objectos = cargarObjetos(datosIniciales);
 
-// Los tres paneles, el buscador y el botón de restablecer
+// Los tres paneles, el buscador y los botones del header
 const arbol = document.querySelector("#arbol");
 const lista = document.querySelector("#lista");
 const detalles = document.querySelector("#detalles");
 const buscador = document.querySelector("#buscador");
+const botonNuevoUsuario = document.querySelector("#nuevo-usuario");
 const botonRestablecer = document.querySelector("#restablecer-datos");
 
 // La raíz es el único objeto sin padre (el dominio)
-const raiz = o.find((obj) => obj.parentId === null);
+const raiz = objectos.find((obj) => obj.parentId === null);
 
 // Usuario al que se le está cambiando la contraseña (let porque se reasigna)
 let usuarioEnModal = null;
@@ -46,14 +54,14 @@ function alSeleccionarCarpeta(id) {
   carpetaActual = id;
   buscador.value = ""; // al navegar el árbol se limpia la búsqueda
   marcarSeleccionado(arbol, id);
-  renderizarLista(o, id, lista, alSeleccionarObjeto);
-  renderizarDetalles(o, null, detalles, alAccionar);
+  renderizarLista(objectos, id, lista, alSeleccionarObjeto);
+  renderizarDetalles(objectos, null, detalles, alAccionar);
 }
 
 // Clic en una fila de la tabla: muestra las propiedades de ese objeto
 function alSeleccionarObjeto(id) {
-  const objeto = buscarPorId(o, id);
-  renderizarDetalles(o, objeto, detalles, alAccionar);
+  const objeto = buscarPorId(objectos, id);
+  renderizarDetalles(objectos, objeto, detalles, alAccionar);
 }
 
 // Cada vez que se escribe en el buscador (evento "input")
@@ -67,18 +75,18 @@ function alBuscar() {
   }
 
   // Cada resultado lleva su ubicación ya calculada para que ui.js solo dibuje
-  const resultados = buscarObjetos(o, consulta).map((obj) => ({
+  const resultados = buscarObjetos(objectos, consulta).map((obj) => ({
     objeto: obj,
-    ubicacion: obtenerRuta(o, obj),
+    ubicacion: obtenerRuta(objectos, obj),
   }));
 
   renderizarResultados(resultados, consulta, lista, alSeleccionarObjeto);
-  renderizarDetalles(o, null, detalles, alAccionar);
+  renderizarDetalles(objectos, null, detalles, alAccionar);
 }
 
 // Clic en un botón del panel: aplica la acción, guarda y redibuja el panel derecho
 function alAccionar(accion, id) {
-  const usuario = buscarPorId(o, id);
+  const usuario = buscarPorId(objectos, id);
 
   switch (accion) {
     case "deshabilitar":
@@ -97,11 +105,11 @@ function alAccionar(accion, id) {
       break;
   }
 
-  guardarObjetos(o); // persiste cualquier cambio en el navegador
-  renderizarDetalles(o, usuario, detalles, alAccionar);
+  guardarObjetos(objectos); // persiste cualquier cambio en el navegador
+  renderizarDetalles(objectos, usuario, detalles, alAccionar);
 }
 
-// Se ejecuta al enviar el formulario del modal
+// Se ejecuta al enviar el formulario de restablecer contraseña
 function alEnviarContrasena(datos) {
   const errores = validarContrasena(datos.contrasena, datos.confirmacion, usuarioEnModal);
 
@@ -113,9 +121,35 @@ function alEnviarContrasena(datos) {
 
   // Sin errores: aplica el reseteo, lo guarda, cierra el modal y actualiza el panel
   resetearContrasena(usuarioEnModal, datos.debeCambiar, datos.desbloquear);
-  guardarObjetos(o);
+  guardarObjetos(objectos);
   cerrarModalContrasena();
-  renderizarDetalles(o, usuarioEnModal, detalles, alAccionar);
+  renderizarDetalles(objectos, usuarioEnModal, detalles, alAccionar);
+}
+
+// Clic en "Nuevo usuario": abre el modal con la carpeta actual preseleccionada
+function alAbrirNuevoUsuario() {
+  abrirModalNuevoUsuario(listarCarpetas(objectos), carpetaActual);
+}
+
+// Se ejecuta al enviar el formulario de nuevo usuario
+function alEnviarNuevoUsuario(datos) {
+  const errores = validarNuevoUsuario(objectos, datos);
+
+  // Con errores: los muestra y deja el modal abierto
+  if (errores.length > 0) {
+    mostrarErrorNuevoUsuario(errores.join(" "));
+    return;
+  }
+
+  // Crea el usuario, lo guarda y cierra el modal
+  const nuevo = crearUsuario(objectos, datos);
+  guardarObjetos(objectos);
+  cerrarModalNuevoUsuario();
+
+  // Muestra su carpeta, resalta la fila del usuario nuevo y abre su detalle
+  alSeleccionarCarpeta(nuevo.parentId);
+  lista.querySelector(`tr[data-id="${nuevo.id}"]`)?.classList.add("fila-seleccionada");
+  alSeleccionarObjeto(nuevo.id);
 }
 
 // Borra lo guardado y recarga la página con los datos iniciales
@@ -127,10 +161,12 @@ function alRestablecerDatos() {
 }
 
 // Arranque: dibuja el árbol (parentId null = empieza por la raíz)...
-renderizarArbol(o, raiz.parentId, arbol, alSeleccionarCarpeta);
-// ...conecta modal, buscador y botón de restablecer...
+renderizarArbol(objectos, raiz.parentId, arbol, alSeleccionarCarpeta);
+// ...conecta modales, buscador y botones...
 iniciarModalContrasena(alEnviarContrasena);
+iniciarModalNuevoUsuario(alEnviarNuevoUsuario);
 buscador.addEventListener("input", alBuscar);
+botonNuevoUsuario.addEventListener("click", alAbrirNuevoUsuario);
 botonRestablecer.addEventListener("click", alRestablecerDatos);
 // ...y deja el dominio seleccionado al abrir la página
 alSeleccionarCarpeta(raiz.id);
