@@ -121,6 +121,25 @@
     </div>
   </form>
 </dialog>
+
+<!-- Modal de mover objeto (lo abre JS con showModal) -->
+<dialog id="modal-mover" aria-labelledby="titulo-mover">
+  <form id="form-mover" novalidate>
+    <h2 id="titulo-mover">Mover objeto</h2>
+    <p id="mover-objeto"></p>
+
+    <label for="mover-destino">Nueva ubicación</label>
+    <!-- Las opciones las genera JS -->
+    <select id="mover-destino" name="destino"></select>
+
+    <p id="error-mover" role="alert"></p>
+
+    <div class="acciones-modal">
+      <button type="button" id="cancelar-mover">Cancelar</button>
+      <button type="submit">Mover</button>
+    </div>
+  </form>
+</dialog>
     
     <script type="module" src="js/main.js"></script>
 </body>

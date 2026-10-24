@@ -245,9 +245,12 @@ dialog .opcion {
   gap: var(--espaciado-sm);
 }
 
-#error-contrasena {
+/* Mensajes de error de los modales */
+#error-contrasena,
+#error-nuevo-usuario,
+#error-mover {
   color: var(--peligro);
-  min-height: 1.5em; /* reserva el lugar para que el modal no salte al aparecer el error */
+  min-height: 1.5em; /* reserva el lugar para que el modal no salte */
 }
 
 .acciones-modal {

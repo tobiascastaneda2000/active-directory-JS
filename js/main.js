@@ -15,6 +15,8 @@ import {
   validarNuevoUsuario,
   crearUsuario,
   establecerGrupos,
+  validarMovimiento,
+  moverObjeto,
 } from "./state.js";
 import {
   renderizarArbol,
@@ -33,6 +35,10 @@ import {
   abrirModalGrupos,
   cerrarModalGrupos,
   iniciarModalGrupos,
+  abrirModalMover,
+  cerrarModalMover,
+  mostrarErrorMover,
+  iniciarModalMover,
 } from "./ui.js";
 
 // Datos de trabajo: los guardados en el navegador o, si no hay, los iniciales
@@ -49,9 +55,10 @@ const botonRestablecer = document.querySelector("#restablecer-datos");
 // La raíz es el único objeto sin padre (el dominio)
 const raiz = objectos.find((obj) => obj.parentId === null);
 
-// Usuarios con un modal abierto (let porque se reasignan)
+// Objetos con un modal abierto (let porque se reasignan)
 let usuarioEnModal = null;
 let usuarioEnGrupos = null;
+let objetoAMover = null;
 // Última carpeta elegida, para volver a ella al borrar la búsqueda
 let carpetaActual = raiz.id;
 
@@ -92,32 +99,40 @@ function alBuscar() {
 
 // Clic en un botón del panel: aplica la acción, guarda y redibuja el panel derecho
 function alAccionar(accion, id) {
-  const usuario = buscarPorId(objectos, id);
+  const objeto = buscarPorId(objectos, id);
 
   switch (accion) {
     case "deshabilitar":
-      deshabilitarUsuario(usuario);
+      deshabilitarUsuario(objeto);
       break;
     case "habilitar":
-      habilitarUsuario(usuario);
+      habilitarUsuario(objeto);
       break;
     case "desbloquear":
-      desbloquearUsuario(usuario);
+      desbloquearUsuario(objeto);
       break;
     case "resetear":
       // No cambia datos todavía: guarda el usuario y abre el modal
-      usuarioEnModal = usuario;
-      abrirModalContrasena(usuario);
+      usuarioEnModal = objeto;
+      abrirModalContrasena(objeto);
       break;
     case "grupos":
       // Abre el modal con todos los grupos del dominio
-      usuarioEnGrupos = usuario;
-      abrirModalGrupos(usuario, listarGrupos(objectos));
+      usuarioEnGrupos = objeto;
+      abrirModalGrupos(objeto, listarGrupos(objectos));
+      break;
+    case "mover":
+      // Ofrece todas las carpetas menos donde ya está el objeto
+      objetoAMover = objeto;
+      abrirModalMover(
+        objeto,
+        listarCarpetas(objectos).filter((carpeta) => carpeta.id !== objeto.parentId)
+      );
       break;
   }
 
   guardarObjetos(objectos); // persiste cualquier cambio en el navegador
-  renderizarDetalles(objectos, usuario, detalles, alAccionar);
+  renderizarDetalles(objectos, objeto, detalles, alAccionar);
 }
 
 // Se ejecuta al enviar el formulario de restablecer contraseña
@@ -143,6 +158,27 @@ function alEnviarGrupos(idsGrupos) {
   guardarObjetos(objectos);
   cerrarModalGrupos();
   renderizarDetalles(objectos, usuarioEnGrupos, detalles, alAccionar);
+}
+
+// Se ejecuta al enviar el modal de mover; recibe el id de la carpeta destino
+function alEnviarMover(idDestino) {
+  const errores = validarMovimiento(objectos, objetoAMover, idDestino);
+
+  // Con errores: los muestra y deja el modal abierto
+  if (errores.length > 0) {
+    mostrarErrorMover(errores.join(" "));
+    return;
+  }
+
+  // Mueve, guarda y cierra el modal
+  moverObjeto(objetoAMover, idDestino);
+  guardarObjetos(objectos);
+  cerrarModalMover();
+
+  // Salta a la carpeta destino con el objeto resaltado y su detalle abierto
+  alSeleccionarCarpeta(idDestino);
+  lista.querySelector(`tr[data-id="${objetoAMover.id}"]`)?.classList.add("fila-seleccionada");
+  alSeleccionarObjeto(objetoAMover.id);
 }
 
 // Clic en "Nuevo usuario": abre el modal con la carpeta actual preseleccionada
@@ -185,6 +221,7 @@ renderizarArbol(objectos, raiz.parentId, arbol, alSeleccionarCarpeta);
 iniciarModalContrasena(alEnviarContrasena);
 iniciarModalNuevoUsuario(alEnviarNuevoUsuario);
 iniciarModalGrupos(alEnviarGrupos);
+iniciarModalMover(alEnviarMover);
 buscador.addEventListener("input", alBuscar);
 botonNuevoUsuario.addEventListener("click", alAbrirNuevoUsuario);
 botonRestablecer.addEventListener("click", alRestablecerDatos);

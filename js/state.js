@@ -181,3 +181,35 @@ export function establecerGrupos(objetos, usuario, idsGrupos) {
   // Recalcula memberOf solo con grupos que existen
   usuario.memberOf = grupos.map((g) => g.id).filter((id) => idsGrupos.includes(id));
 }
+
+// Tipos de objeto que se pueden mover (dominio, OUs y containers quedan fijos)
+const TIPOS_MOVIBLES = ["user", "group", "computer"];
+
+// Devuelve los errores de mover un objeto a otra carpeta (lista vacía = válido)
+export function validarMovimiento(objetos, objeto, idDestino) {
+  const errores = [];
+  const destino = objetos.find((obj) => obj.id === idDestino);
+
+  if (!TIPOS_MOVIBLES.includes(objeto.type)) {
+    errores.push("Este tipo de objeto no se puede mover.");
+  }
+
+  if (!destino || !["ou", "container"].includes(destino.type)) {
+    errores.push("Elegí una ubicación válida.");
+  } else if (destino.id === objeto.parentId) {
+    errores.push("El objeto ya está en esa ubicación.");
+  } else if (
+    objetos.some((obj) => obj.parentId === destino.id && obj.name.toLowerCase() === objeto.name.toLowerCase())
+  ) {
+    // Misma regla del alta: no puede haber dos objetos con el mismo nombre en una carpeta
+    errores.push("Ya existe un objeto con ese nombre en la ubicación elegida.");
+  }
+
+  return errores;
+}
+
+// Mover = cambiar el padre; es lo único que define dónde "vive" el objeto en el árbol
+export function moverObjeto(objeto, idDestino) {
+  if (!TIPOS_MOVIBLES.includes(objeto.type)) return;
+  objeto.parentId = idDestino;
+}

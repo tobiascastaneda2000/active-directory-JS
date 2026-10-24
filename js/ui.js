@@ -235,8 +235,12 @@ export function renderizarDetalles(objetos, objeto, contenedor, alAccionar) {
   }
 
   // Si no es usuario (OU, equipo, grupo) solo se ve el tipo, sin botones
-  if (objeto.type !== "user") {
-    contenedor.replaceChildren(titulo, dl);
+   if (objeto.type !== "user") {
+    // Equipos y grupos se pueden mover; dominio, OUs y containers no
+    const botonesMover = ["group", "computer"].includes(objeto.type)
+      ? [crearBoton("Mover a otra carpeta", () => alAccionar("mover", objeto.id))]
+      : [];
+    contenedor.replaceChildren(titulo, dl, ...botonesMover);
     return;
   }
 
@@ -270,6 +274,9 @@ export function renderizarDetalles(objetos, objeto, contenedor, alAccionar) {
 
     // Abre el modal para elegir los grupos del usuario
   botones.push(crearBoton("Administrar grupos", () => alAccionar("grupos", objeto.id)));
+
+    // Abre el modal para elegir la carpeta destino
+  botones.push(crearBoton("Mover a otra carpeta", () => alAccionar("mover", objeto.id)));
 
   if (objeto.enabled) {
     botones.push(crearBoton("Deshabilitar cuenta", () => alAccionar("deshabilitar", objeto.id)));
@@ -478,4 +485,48 @@ export function iniciarModalGrupos(alEnviar) {
   });
 
   document.querySelector("#cancelar-grupos").addEventListener("click", cerrarModalGrupos);
+}
+
+
+// ---------- MODAL: mover objeto ----------
+const modalMover = document.querySelector("#modal-mover");
+const formularioMover = document.querySelector("#form-mover");
+const textoObjetoMover = document.querySelector("#mover-objeto");
+const selectorDestino = document.querySelector("#mover-destino");
+const textoErrorMover = document.querySelector("#error-mover");
+
+// Abre el modal con las carpetas posibles como opciones del desplegable
+export function abrirModalMover(objeto, carpetas) {
+  textoErrorMover.textContent = "";
+  textoObjetoMover.textContent = `Objeto: ${objeto.name}`;
+
+  // Una <option> por carpeta: value guarda el id y el texto muestra la ruta
+  const opciones = carpetas.map(({ id, ruta }) => {
+    const opcion = document.createElement("option");
+    opcion.value = id;
+    opcion.textContent = ruta;
+    return opcion;
+  });
+  selectorDestino.replaceChildren(...opciones);
+
+  modalMover.showModal();
+}
+
+export function cerrarModalMover() {
+  modalMover.close();
+}
+
+export function mostrarErrorMover(mensaje) {
+  textoErrorMover.textContent = mensaje;
+}
+
+// Conecta el envío del formulario y el botón Cancelar
+export function iniciarModalMover(alEnviar) {
+  formularioMover.addEventListener("submit", (evento) => {
+    evento.preventDefault(); // evita que la página se recargue
+    // select.value es texto: Number() lo pasa a número para compararlo con los ids
+    alEnviar(Number(selectorDestino.value));
+  });
+
+  document.querySelector("#cancelar-mover").addEventListener("click", cerrarModalMover);
 }
