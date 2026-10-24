@@ -289,3 +289,9 @@ dialog .opcion {
 #nuevo-usuario:hover {
   border-color: var(--acento);
 }
+
+/* Lista de grupos del modal: con scroll si hay muchos */
+#lista-grupos {
+  max-height: 40vh;
+  overflow-y: auto;
+}

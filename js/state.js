@@ -154,3 +154,30 @@ export function crearUsuario(objetos, datos) {
   objetos.push(usuario); // modifica el array original, por eso toda la app lo ve
   return usuario;
 }
+
+// Devuelve todos los grupos del dominio
+export function listarGrupos(objetos) {
+  return objetos.filter((obj) => obj.type === "group");
+}
+
+// Deja al usuario como miembro de exactamente esos grupos (único lugar que toca memberOf y members)
+export function establecerGrupos(objetos, usuario, idsGrupos) {
+  if (usuario.type !== "user") return;
+
+  const grupos = listarGrupos(objetos);
+
+  grupos.forEach((grupo) => {
+    const miembros = grupo.members ?? [];
+    const debeEstar = idsGrupos.includes(grupo.id);
+    const yaEsta = miembros.includes(usuario.id);
+
+    if (debeEstar && !yaEsta) {
+      grupo.members = [...miembros, usuario.id]; // lo agrega al grupo
+    } else if (!debeEstar && yaEsta) {
+      grupo.members = miembros.filter((id) => id !== usuario.id); // lo quita del grupo
+    }
+  });
+
+  // Recalcula memberOf solo con grupos que existen
+  usuario.memberOf = grupos.map((g) => g.id).filter((id) => idsGrupos.includes(id));
+}

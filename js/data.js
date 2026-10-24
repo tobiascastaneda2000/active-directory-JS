@@ -41,4 +41,8 @@ export const objectos = [
     mustChangePassword: true, passwordLastSet: "2023-11-20",
     memberOf: [],
   },
+
+    // Grupos nuevos para probar la administración de miembros
+  { id: 16, type: "group", name: "IT-Soporte",   parentId: 4, members: [12] },
+  { id: 17, type: "group", name: "VPN-Usuarios", parentId: 2, members: [] },
 ];

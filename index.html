@@ -104,6 +104,23 @@
         </div>
     </form>
     </dialog>
+
+    <!-- Modal de administrar grupos (lo abre JS con showModal) -->
+<dialog id="modal-grupos" aria-labelledby="titulo-grupos">
+  <form id="form-grupos">
+    <h2 id="titulo-grupos">Administrar grupos</h2>
+    <p id="grupos-usuario"></p>
+    <p>Marcá los grupos de los que debe ser miembro:</p>
+
+    <!-- Las casillas las genera JS -->
+    <div id="lista-grupos" role="group" aria-label="Grupos del usuario"></div>
+
+    <div class="acciones-modal">
+      <button type="button" id="cancelar-grupos">Cancelar</button>
+      <button type="submit">Guardar</button>
+    </div>
+  </form>
+</dialog>
     
     <script type="module" src="js/main.js"></script>
 </body>

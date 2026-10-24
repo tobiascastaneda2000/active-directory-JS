@@ -226,6 +226,14 @@ export function renderizarDetalles(objetos, objeto, contenedor, alAccionar) {
   const dl = document.createElement("dl");
   agregarDato(dl, "Tipo", NOMBRES_DE_TIPO[objeto.type]);
 
+    // Los grupos muestran los nombres de sus miembros
+  if (objeto.type === "group") {
+    const nombresMiembros = (objeto.members ?? [])
+      .map((id) => objetos.find((o) => o.id === id)?.name)
+      .filter(Boolean);
+    agregarDato(dl, "Miembros", nombresMiembros.length > 0 ? nombresMiembros.join(", ") : "Ninguno");
+  }
+
   // Si no es usuario (OU, equipo, grupo) solo se ve el tipo, sin botones
   if (objeto.type !== "user") {
     contenedor.replaceChildren(titulo, dl);
@@ -259,6 +267,9 @@ export function renderizarDetalles(objetos, objeto, contenedor, alAccionar) {
 
     // Siempre disponible para un usuario: abre el modal de reset
   botones.push(crearBoton("Restablecer contraseña", () => alAccionar("resetear", objeto.id)));
+
+    // Abre el modal para elegir los grupos del usuario
+  botones.push(crearBoton("Administrar grupos", () => alAccionar("grupos", objeto.id)));
 
   if (objeto.enabled) {
     botones.push(crearBoton("Deshabilitar cuenta", () => alAccionar("deshabilitar", objeto.id)));
@@ -415,4 +426,56 @@ export function iniciarModalNuevoUsuario(alEnviar) {
   document
     .querySelector("#cancelar-nuevo-usuario")
     .addEventListener("click", cerrarModalNuevoUsuario);
+}
+
+
+// ---------- MODAL: administrar grupos ----------
+const modalGrupos = document.querySelector("#modal-grupos");
+const formularioGrupos = document.querySelector("#form-grupos");
+const textoUsuarioGrupos = document.querySelector("#grupos-usuario");
+const contenedorGrupos = document.querySelector("#lista-grupos");
+
+// Abre el modal con una casilla por grupo, marcada si el usuario ya es miembro
+export function abrirModalGrupos(usuario, grupos) {
+  textoUsuarioGrupos.textContent = `Usuario: ${usuario.name} (${usuario.sam})`;
+
+  // Sin grupos en el dominio: solo un aviso
+  if (grupos.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.textContent = "No hay grupos en el dominio.";
+    contenedorGrupos.replaceChildren(vacio);
+  } else {
+    const filas = grupos.map((grupo) => {
+      const etiqueta = document.createElement("label");
+      etiqueta.className = "opcion";
+
+      const casilla = document.createElement("input");
+      casilla.type = "checkbox";
+      casilla.value = grupo.id;
+      casilla.checked = (usuario.memberOf ?? []).includes(grupo.id);
+
+      etiqueta.append(casilla, grupo.name); // append acepta elementos y texto
+      return etiqueta;
+    });
+    contenedorGrupos.replaceChildren(...filas);
+  }
+
+  modalGrupos.showModal();
+}
+
+export function cerrarModalGrupos() {
+  modalGrupos.close();
+}
+
+// Conecta el envío del formulario y el botón Cancelar
+export function iniciarModalGrupos(alEnviar) {
+  formularioGrupos.addEventListener("submit", (evento) => {
+    evento.preventDefault(); // evita que la página se recargue
+
+    // :checked trae solo las casillas marcadas; [...] pasa la lista a array; Number() convierte el texto del value
+    const marcados = [...contenedorGrupos.querySelectorAll("input:checked")].map((c) => Number(c.value));
+    alEnviar(marcados);
+  });
+
+  document.querySelector("#cancelar-grupos").addEventListener("click", cerrarModalGrupos);
 }

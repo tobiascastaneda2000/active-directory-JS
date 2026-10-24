@@ -1,7 +1,7 @@
 // storage.js: guarda y recupera los datos en el navegador (localStorage)
 const CLAVE = "ad-simulator:objetos";
 // Subir este número cuando cambie la estructura de data.js: descarta lo guardado
-const VERSION = 1;
+const VERSION = 2;
 
 // Devuelve los objetos guardados o, si no hay (o están dañados), los iniciales
 export function cargarObjetos(datosIniciales) {

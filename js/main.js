@@ -6,6 +6,7 @@ import {
   buscarObjetos,
   obtenerRuta,
   listarCarpetas,
+  listarGrupos,
   deshabilitarUsuario,
   habilitarUsuario,
   desbloquearUsuario,
@@ -13,6 +14,7 @@ import {
   resetearContrasena,
   validarNuevoUsuario,
   crearUsuario,
+  establecerGrupos,
 } from "./state.js";
 import {
   renderizarArbol,
@@ -28,6 +30,9 @@ import {
   cerrarModalNuevoUsuario,
   mostrarErrorNuevoUsuario,
   iniciarModalNuevoUsuario,
+  abrirModalGrupos,
+  cerrarModalGrupos,
+  iniciarModalGrupos,
 } from "./ui.js";
 
 // Datos de trabajo: los guardados en el navegador o, si no hay, los iniciales
@@ -44,8 +49,9 @@ const botonRestablecer = document.querySelector("#restablecer-datos");
 // La raíz es el único objeto sin padre (el dominio)
 const raiz = objectos.find((obj) => obj.parentId === null);
 
-// Usuario al que se le está cambiando la contraseña (let porque se reasigna)
+// Usuarios con un modal abierto (let porque se reasignan)
 let usuarioEnModal = null;
+let usuarioEnGrupos = null;
 // Última carpeta elegida, para volver a ella al borrar la búsqueda
 let carpetaActual = raiz.id;
 
@@ -103,6 +109,11 @@ function alAccionar(accion, id) {
       usuarioEnModal = usuario;
       abrirModalContrasena(usuario);
       break;
+    case "grupos":
+      // Abre el modal con todos los grupos del dominio
+      usuarioEnGrupos = usuario;
+      abrirModalGrupos(usuario, listarGrupos(objectos));
+      break;
   }
 
   guardarObjetos(objectos); // persiste cualquier cambio en el navegador
@@ -124,6 +135,14 @@ function alEnviarContrasena(datos) {
   guardarObjetos(objectos);
   cerrarModalContrasena();
   renderizarDetalles(objectos, usuarioEnModal, detalles, alAccionar);
+}
+
+// Se ejecuta al guardar el modal de grupos; recibe los ids de los grupos marcados
+function alEnviarGrupos(idsGrupos) {
+  establecerGrupos(objectos, usuarioEnGrupos, idsGrupos);
+  guardarObjetos(objectos);
+  cerrarModalGrupos();
+  renderizarDetalles(objectos, usuarioEnGrupos, detalles, alAccionar);
 }
 
 // Clic en "Nuevo usuario": abre el modal con la carpeta actual preseleccionada
@@ -165,6 +184,7 @@ renderizarArbol(objectos, raiz.parentId, arbol, alSeleccionarCarpeta);
 // ...conecta modales, buscador y botones...
 iniciarModalContrasena(alEnviarContrasena);
 iniciarModalNuevoUsuario(alEnviarNuevoUsuario);
+iniciarModalGrupos(alEnviarGrupos);
 buscador.addEventListener("input", alBuscar);
 botonNuevoUsuario.addEventListener("click", alAbrirNuevoUsuario);
 botonRestablecer.addEventListener("click", alRestablecerDatos);
